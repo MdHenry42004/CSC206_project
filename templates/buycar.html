@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Purchase Vehicle</title>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('profile') }}">My Profile</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+
+            {% if session.get('role') == 'Owner' %}
+                <a href="{{ url_for('reports') }}">Reports</a>
+            {% endif %}
+        </nav>
+
+    </body>
+</html>

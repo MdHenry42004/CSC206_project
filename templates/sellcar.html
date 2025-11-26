@@ -2,22 +2,25 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" href="../content/style.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <title>Sell My Car</title>
     </head>
     <body>
         <nav>
-            <a href="../home.html">Home</a>
-            <a href="../cars/vehicles.html">Vehicles</a>
-            <a href="sellcar.html">Sell My Car</a>
-            <a href="../user/profile.html">My Profile</a>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+            <a href="{{ url_for('profile') }}">My Profile</a>
+            
+            {% if session.get('role') == 'Owner' %}
+                <a href="{{ url_for('reports') }}">Reports</a>
+            {% endif %}
         </nav>
 
         <h1>Sell My Car</h1>
 
         <footer>
-            <p><a href="aboutus.html" style="color: lightblue">About Us</a></p>
         </footer>
+        
         <form action="carsold.html" method="post">
             <table align="center">
                 <tr>

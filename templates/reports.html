@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Reports</title>
+    </head>
+    
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+            <a href="{{ url_for('profile') }}">My Profile</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+        </nav>
+
+        <div class="container">
+            <h1>Reports</h1>
+            <a href="{{ url_for('sales_productivity') }}"><button>Sales Productivity</button></a>
+            <a href="{{ url_for('seller_history') }}"><button>Seller History</button></a>
+            <a href="{{ url_for('part_statistics') }}"><button>Parts Statistics</button></a>
+        </div>
+
+        <footer>
+        </footer>
+    </body>
+</html>

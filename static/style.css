@@ -2,8 +2,9 @@
 body {
     background-color: white;
     margin: 0;
-    padding: 0;
+    padding-bottom: 80px;
 }
+
 
 h1 {
   font-family: "BBH Sans Bogle", sans-serif;
@@ -67,9 +68,24 @@ footer {
     width: 100%;
 }
 
-.login {
-    margin-top: 20rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.container {
+    background-color: lightgray;
+    border-radius: 10px;
+    width: 350px;
+    height: auto;
+    padding: 40px;
+    text-align: center;
+    margin: auto;
+    margin-top: 11rem;
+}
+
+input{
+    height: 30px;
+    width: 300px;
+    margin: 10px;
+}
+
+button{
+    margin: 10px;
+    width: 140px;
 }

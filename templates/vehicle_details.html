@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Vehicle Details</title>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('profile') }}">My Profile</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+
+            {% if session.get('role') == 'Owner' %}
+                <a href="{{ url_for('reports') }}">Reports</a>
+            {% endif %}
+        </nav>
+
+        <h1>Vehicle Details</h1>
+        
+        <table style="border: 2px solid black; margin: 0 auto;">
+            <tr>
+                <th style="border: 2px solid black">VIN</th>
+                <td style="border: 2px solid black">{{ vehicle.vin }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Model Year</th>
+                <td style="border: 2px solid black">{{ vehicle.model_year }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Model Name</th>
+                <td style="border: 2px solid black">{{ vehicle.model_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Vehicle Type</th>
+                <td style="border: 2px solid black">{{ vehicle.vehicle_type_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Manufacturer</th>
+                <td style="border: 2px solid black">{{ vehicle.manufacturer_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Colors</th>
+                <td style="border: 2px solid black">{{ vehicle.colors }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Purchase Price</th>
+                <td style="border: 2px solid black">${{ vehicle.price }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Description</th>
+                <td style="border: 2px solid black">{{ vehicle.description }}</td>
+            </tr>
+        </table>
+
+        {% if session.get('role') in ['Buyer', 'Owner'] %}
+            <p style="text-align: center;"><a href="{{ url_for('buy') }}"><button>Purchase Vehicle</button></a></p>
+        {% endif %}
+
+        {% if session.get('role') == 'Sales' %}
+            <p style="text-align: center;"><a href="{{ url_for('sell') }}"><button>Sell My Car</button></a></p>
+        {% endif %}
+
+        {% if session.get('role') == 'Buyer' %}
+        <h2 style="text-align: center;">Parts</h2>
+        <table style="border: 2px solid black; margin: 0 auto;">
+            <tr>
+                <th style="border: 2px solid black">Part</th>
+                <th style="border: 2px solid black">Status</th>
+                <th style="border: 2px solid black">Mark</th>
+            </tr>
+            {% for part in parts %}
+            <tr>
+                <td style="border: 2px solid black">{{ part.description }}</td>
+                <td style="border: 2px solid black">{{ part.status }}</td>
+                <td style="border: 2px solid black">
+                    {% if part.status == 'Ordered' %}
+                        <form method="POST" action="{{ url_for('mark', partID=part.partID, vin=vehicle.vin) }}">
+                            <button type="submit">Mark Installed</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if session.get('role') == 'Owner' %}
+        <h1 style="text-align: center;">Sales and Repairs</h1>
+        
+        <h2 style="text-align: center;">Seller Info</h2>
+
+        <table style="border: 2px solid black; margin: 0 auto;">
+            <tr>
+                <th style="border: 2px solid black">First Name</th>
+                <td style="border: 2px solid black">{{ seller.first_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Last Name</th>
+                <td style="border: 2px solid black">{{ seller.last_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Phone Number</th>
+                <td style="border: 2px solid black">{{ seller.phone_number }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Email Address</th>
+                <td style="border: 2px solid black">{{ seller.email_address }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Street</th>
+                <td style="border: 2px solid black">{{ seller.street }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">State</th>
+                <td style="border: 2px solid black">{{ seller.state }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Postal Code</th>
+                <td style="border: 2px solid black">{{ seller.postal_code }}</td>
+            </tr>
+            <tr>       
+                <th style="border: 2px solid black">Seller ID</th>
+                <td style="border: 2px solid black">{{ seller.customerID }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">ID Number</th>
+                <td style="border: 2px solid black">{{ seller.id_number }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Business Name</th>
+                <td style="border: 2px solid black">{{ seller.business_name }}</td>
+            </tr>
+        </table>
+        
+        <h2 style="text-align: center;">Buyer Info</h2>
+
+        <table style="border: 2px solid black; margin: 0 auto;">
+
+            <tr>
+                <th style="border: 2px solid black">First Name</th>
+                <td style="border: 2px solid black">{{ buyer.first_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Last Name</th>
+                <td style="border: 2px solid black">{{ buyer.last_name }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Phone Number</th>
+                <td style="border: 2px solid black">{{ buyer.phone_number }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Email Address</th>
+                <td style="border: 2px solid black">{{ buyer.email_address }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Street</th>
+                <td style="border: 2px solid black">{{ buyer.street }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">State</th>
+                <td style="border: 2px solid black">{{ buyer.state }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Postal Code</th>
+                <td style="border: 2px solid black">{{ buyer.postal_code }}</td>
+            </tr>
+            <tr>       
+                <th style="border: 2px solid black">Seller ID</th>
+                <td style="border: 2px solid black">{{ buyer.customerID }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">ID Number</th>
+                <td style="border: 2px solid black">{{ buyer.id_number }}</td>
+            </tr>
+            <tr>
+                <th style="border: 2px solid black">Business Name</th>
+                <td style="border: 2px solid black">{{ buyer.business_name }}</td>
+            </tr>
+        </table>
+        {% endif %}
+    </body>
+</html>

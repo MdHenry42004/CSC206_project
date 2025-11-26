@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Seller History</title>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+            <a href="{{ url_for('profile') }}">My Profile</a>
+            <a href="{{ url_for('reports') }}">Reports</a>
+        </nav>
+
+        <h1>Seller History</h1>
+
+    <table style="border: 2px solid black; margin: 0 auto">
+        <tr>
+            <th style="border: 2px solid black">Seller</th>
+            <th style="border: 2px solid black">Vehicles Sold to Us</th>
+            <th style="border: 2px solid black">Total Paid</th>
+        </tr>
+
+        {% for s in sellers %}
+        <tr>
+            <td style="border: 2px solid black">{{ s.first_name }} {{ s.last_name }}</td>
+            <td style="border: 2px solid black">{{ s.sold }}</td>
+            <td style="border: 2px solid black">{{ s.total }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+        <footer>
+        </footer>
+    </body>
+</html>

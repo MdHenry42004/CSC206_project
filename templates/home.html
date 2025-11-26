@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>Home Page</title>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+
+            <!--Session.get was found here https://learn.microsoft.com/en-us/windows/win32/winrm/session-get-->
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('profile') }}">My Profile</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+
+            {% if session.get('role') == 'Owner' %}
+                <a href="{{ url_for('reports') }}">Reports</a>
+            {% endif %}
+        </nav>
+
+        <h1>Home</h1>
+
+        <footer>
+        </footer>
+        
+        <p style="text-align: center;">Welcome to this very real and reliable car dealership website where you can buy used cars cheap and sell us your junk!</p>
+    </body>
+</html>
