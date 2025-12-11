@@ -11,12 +11,12 @@
             <a href="{{ url_for('cars') }}">Vehicles</a>
 
             {% if session.get('loggedin') %}
-                <a href="{{ url_for('profile') }}">My Profile</a>
+                <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
             {% endif %}
 
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
         </nav>
@@ -58,15 +58,15 @@
             </tr>
         </table>
 
-        {% if session.get('role') in ['Buyer', 'Owner'] %}
-            <p style="text-align: center;"><a href="{{ url_for('buy') }}"><button>Purchase Vehicle</button></a></p>
-        {% endif %}
-
         {% if session.get('role') == 'Sales' %}
-            <p style="text-align: center;"><a href="{{ url_for('sell') }}"><button>Sell My Car</button></a></p>
+            <p style="text-align: center;"><a href="{{ url_for('buy', vin=vehicle.vin) }}"><button>Purchase Vehicle</button></a></p>
         {% endif %}
 
         {% if session.get('role') == 'Buyer' %}
+            <p style="text-align: center;"><a href="{{ url_for('sell', vin=vehicle.vin)}}"><button>Sell Car</button></a></p>
+        {% endif %}
+
+        {% if session.get('role') == 'Sales' %}
         <h2 style="text-align: center;">Parts</h2>
         <table style="border: 2px solid black; margin: 0 auto;">
             <tr>
@@ -90,10 +90,10 @@
         </table>
         {% endif %}
 
-        {% if session.get('role') == 'Owner' %}
+        {% if session.get('role') in ['Admin', 'Owner'] %}
         <h1 style="text-align: center;">Sales and Repairs</h1>
         
-        <h2 style="text-align: center;">Seller Info</h2>
+        <h2 style="text-align: center;">Buyer Info</h2>
 
         <table style="border: 2px solid black; margin: 0 auto;">
             <tr>
@@ -138,7 +138,7 @@
             </tr>
         </table>
         
-        <h2 style="text-align: center;">Buyer Info</h2>
+        <h2 style="text-align: center;">Seller Info</h2>
 
         <table style="border: 2px solid black; margin: 0 auto;">
 

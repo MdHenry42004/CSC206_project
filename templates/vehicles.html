@@ -11,12 +11,12 @@
             <a href="{{ url_for('cars') }}">Vehicles</a>
 
             {% if session.get('loggedin') %}
-                <a href="{{ url_for('profile') }}">My Profile</a>
+                <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
             {% endif %}
 
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
         </nav>
@@ -26,7 +26,9 @@
 
         <h2>Our Vehicles</h2>
 
-        {% if session.get('role') == 'Owner' %}
+        {% if request.path != '/allcars' %}
+
+        {% if session.get('role') in ['Admin', 'Owner'] %}
             <p style="text-align: center;"><a href="{{ url_for('allcars') }}"><button>All Vehicles</button></a></p>
         {% endif %}
 
@@ -35,7 +37,7 @@
             <label>Type</label>
             <input type="text" name="vehicle_type">
             <label>Manufacturer</label>
-            <input type="text" name="Manufacturer">
+            <input type="text" name="manufacturer">
             <label>Year</label>
             <input type="text" name="model_year">
             <label>Fuel Type</label>
@@ -45,7 +47,6 @@
             <input type="submit" value="Search">
         </form>
 
-        {% if request.path != '/allcars' %}
         <table style="border: 2px solid black; margin: 0 auto">
             <tr>
                 <th style="border: 2px solid black">Vin Number</th>
@@ -55,10 +56,11 @@
                 <th style="border: 2px solid black">Model</th>
                 <th style="border: 2px solid black">Color</th>
                 <th style="border: 2px solid black">Price</th>
-                {% if session.get('role') in ['Buyer', 'Owner'] %}
+                {% if session.get('role') == 'Sales' %}
                     <th style="border: 2px solid black">Purchase</th>
                 {% endif %}
             </tr>
+
             {% for v in vehicles %}
             <tr>
                 <td style="border: 2px solid black"><a href="{{ url_for('details', vin=v.vin) }}">{{v.vin}}</a></td>
@@ -68,8 +70,11 @@
                 <td style="border: 2px solid black">{{v.model_name}}</td>
                 <td style="border: 2px solid black">{{v.colors}}</td>
                 <td style="border: 2px solid black">{{v.price}}</td>
-                {% if session.get('role') in ['Buyer', 'Owner'] %}
-                    <td style="border: 2px solid black"><a href="{{ url_for('buy') }}"><button>Purchase Vehicle</button></a></td>
+                {% if session.get('role') == 'Sales' %}
+                    <td style="border: 2px solid black"><a href="{{ url_for('buy', vin=v.vin)}}"><button>Purchase Vehicle</button></a></td>
+                {% endif %}
+                {% if session.get('role') in ['Admin', 'Owner', 'Buyer'] %}
+                    <td style="border: 2px solid black"><a href="{{ url_for('sell', vin=v.vin) }}"><button>Sell Vehicle</button></a></td>
                 {% endif %}
             </tr>
             {% endfor %}
@@ -77,6 +82,23 @@
         {% endif %}
 
         {% if request.path == '/allcars' %}
+        
+            <p style="text-align: center;"><a href="{{ url_for('cars') }}"><button>Available Vehicles</button></a></p>
+
+            <form method="GET" action="/allcars" style="text-align: center;">
+                <label>Type</label>
+                <input type="text" name="vehicle_type">
+                <label>Manufacturer</label>
+                <input type="text" name="manufacturer">
+                <label>Year</label>
+                <input type="text" name="model_year">
+                <label>Fuel Type</label>
+                <input type="text" name="fuel_type">
+                <label>Color</label>
+                <input type="text" name="color">
+                <input type="submit" value="Search">
+            </form>
+
             <table style="border: 2px solid black; margin: 0 auto">
             <tr>
                 <th style="border: 2px solid black">Vin Number</th>
@@ -88,6 +110,7 @@
                 <th style="border: 2px solid black">Price</th>
                 <th style="border: 2px solid black">Purchase</th>
             </tr>
+
             {% for c in cars %}
             <tr>
                 <td style="border: 2px solid black"><a href="{{ url_for('details', vin=c.vin) }}">{{c.vin}}</a></td>
@@ -97,8 +120,9 @@
                 <td style="border: 2px solid black">{{c.model_name}}</td>
                 <td style="border: 2px solid black">{{c.colors}}</td>
                 <td style="border: 2px solid black">{{c.price}}</td>
-                <td style="border: 2px solid black"><a href="{{ url_for('buy') }}"><button>Purchase Vehicle</button></a></td>
-            </tr>
+                {% if c.bought == 0 %}
+                    <td style="border: 2px solid black"><a href="{{ url_for('buy', vin=c.vin) }}"><button>Purchase Vehicle</button></a></td>
+                {% endif %}
             {% endfor %}
         </table>
         {% endif %}

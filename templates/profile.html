@@ -11,7 +11,7 @@
             <a href="{{ url_for('home') }}">Home</a>
             <a href="{{ url_for('cars') }}">Vehicles</a>
 
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
 

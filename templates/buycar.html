@@ -11,15 +11,88 @@
             <a href="{{ url_for('cars') }}">Vehicles</a>
 
             {% if session.get('loggedin') %}
-                <a href="{{ url_for('profile') }}">My Profile</a>
+                <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
             {% endif %}
 
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
         </nav>
 
+        <h1>Purchase Vehicle</h1>
+
+        <div class="container">
+        <h2>Details</h2>
+        <h3>{{ vehicle.vin }}, {{ vehicle.model_year }}, {{ vehicle.model_name }}</h3>
+        <form method="POST" action="{{ url_for('purchase') }}">
+            <label>Seller</label>
+            <table style="border: 2px solid black; margin: 0 auto;">
+                <tr>
+                    <th style="border: 2px solid black">First Name</th>
+                    <td style="border: 2px solid black">{{ seller.first_name }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Last Name</th>
+                    <td style="border: 2px solid black">{{ seller.last_name }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Phone Number</th>
+                    <td style="border: 2px solid black">{{ seller.phone_number }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Email Address</th>
+                    <td style="border: 2px solid black">{{ seller.email_address }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Street</th>
+                    <td style="border: 2px solid black">{{ seller.street }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">State</th>
+                    <td style="border: 2px solid black">{{ seller.state }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Postal Code</th>
+                    <td style="border: 2px solid black">{{ seller.postal_code }}</td>
+                </tr>
+                <tr>       
+                    <th style="border: 2px solid black">Seller ID</th>
+                    <td style="border: 2px solid black">{{ seller.customerID }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">ID Number</th>
+                    <td style="border: 2px solid black">{{ seller.id_number }}</td>
+                </tr>
+                <tr>
+                    <th style="border: 2px solid black">Business Name</th>
+                    <td style="border: 2px solid black">{{ seller.business_name }}</td>
+                </tr>
+            </table>
+
+            <input type="hidden" name="vehicleID" value="{{ vehicle.vehicleID }}">
+            <input type="hidden" name="customerID" value="{{ seller.customerID }}">
+            <input type="hidden" name="userID" value="{{ seller.userID }}">
+
+            <label>Purchase Date</label>
+            <input type="date" name="purchase_date" required>
+
+            <label>Purcahse Price</label>
+            <input type="number" name="purchase_price" required>
+            
+            <label>Vehicle Condition</label>
+            <input type="text" name="vehicle_condition" required>
+
+            <button type="submit">Complete Purchase</button>
+        </form>
+        </div>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('new') }}"><button>Add New Customer</button></a>
+        </p>
+
+        <footer>
+        </footer>
     </body>
 </html>

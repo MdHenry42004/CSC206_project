@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+        <title>New Customer</title>
+    </head>
+    <body>
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('cars') }}">Vehicles</a>
+
+            {% if session.get('loggedin') %}
+                <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+            {% endif %}
+
+            {% if session.get('role') in ['Admin', 'Owner'] %}
+                <a href="{{ url_for('reports') }}">Reports</a>
+            {% endif %}
+        </nav>
+
+        <h1>New Customer</h1>
+        
+        <div class="container">
+        <form method="POST" style="text-align: center;">
+            <label>First Name</label>
+            <input type="text" name="first_name" required>
+
+            <label>Last Name</label>
+            <input type="text" name="last_name" required>
+
+            <label>IDNumber</label>
+            <input type="text" name="id_number" required>
+
+            <label>Phone Number</label>
+            <input type="text" name="phone_number">
+
+            <label>Email Address</label>
+            <input type="text" name="email_address">
+
+            <label>Street</label>
+            <input type="text" name="street">
+            
+            <lable>City</lable>
+            <input type="text" name="city">
+
+            <lable>State</lable>
+            <input type="text" name="state">
+
+            <lable>Postal Code</lable>
+            <input type="text" name="postal_code">
+
+            <lable>Business Name</lable>
+            <input type="text" name="business_name">
+
+            <button type="submit">Save Customer</button>
+        </form>
+        </div>
+
+        <footer>
+        </footer>
+    </body>
+</html>

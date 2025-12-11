@@ -68,7 +68,7 @@ def cars():
     #COALESCE was found here https://www.w3schools.com/sql/func_mysql_coalesce.asp
     sql = """SELECT v.vehicleID, v.vin, v.model_year, v.model_name, vt.vehicle_type_name, m.manufacturer_name,
     GROUP_CONCAT(DISTINCT c.color_name SEPARATOR ', ') AS colors, pt.purchase_price,
-    (1.4 * COALESCE(pt.purchase_price) + 1.2 * COALESCE(SUM(p.cost * p.quantity))) AS price
+    (1.4 * COALESCE(pt.purchase_price, 0) + 1.2 * COALESCE(SUM(p.cost * p.quantity), 0)) AS price
     FROM vehicles v
     LEFT JOIN vehicletypes vt ON v.vehicle_typeID = vt.vehicle_typeID
     LEFT JOIN manufacturers m ON v.manufacturerID = m.manufacturerID
@@ -79,7 +79,7 @@ def cars():
     LEFT JOIN parts p ON p.part_orderID = po.part_orderID
     LEFT JOIN salestransactions s ON s.vehicleID = v.vehicleID
     WHERE s.sales_transactionID IS NULL AND NOT EXISTS 
-    (SELECT 1 FROM partorders po JOIN parts p ON p.part_orderID = po.part_orderID WHERE po.vehicleID = v.vehicleID AND p.status <> 'Installed')"""
+        (SELECT 1 FROM partorders po JOIN parts p ON p.part_orderID = po.part_orderID WHERE po.vehicleID = v.vehicleID AND p.status <> 'Installed')"""
     
     #The AND, LIKE, and % were found here https://www.w3schools.com/mysql/mysql_wildcards.asp
     #  
@@ -121,7 +121,8 @@ def allcars():
 
     sql = """SELECT v.vehicleID, v.vin, v.model_year, v.model_name, vt.vehicle_type_name, m.manufacturer_name,
     GROUP_CONCAT(DISTINCT c.color_name SEPARATOR ', ') AS colors, pt.purchase_price,
-    (1.4 * COALESCE(pt.purchase_price, 0) + 1.2 * COALESCE(SUM(p.cost * p.quantity), 0)) AS price
+    (1.4 * COALESCE(pt.purchase_price, 0) + 1.2 * COALESCE(SUM(p.cost * p.quantity), 0)) AS price,
+    CASE WHEN s.sales_transactionID IS NULL THEN 0 ELSE 1 END AS bought
     FROM vehicles v
     LEFT JOIN vehicletypes vt ON v.vehicle_typeID = vt.vehicle_typeID
     LEFT JOIN manufacturers m ON v.manufacturerID = m.manufacturerID
@@ -165,7 +166,7 @@ def details(vin):
 
     detail = """SELECT v.*, vt.vehicle_type_name, m.manufacturer_name,
     GROUP_CONCAT(DISTINCT c.color_name SEPARATOR ', ') AS colors, pt.purchase_price,
-    (1.4 * COALESCE(pt.purchase_price) + 1.2 * COALESCE(SUM(p.cost * p.quantity))) AS price
+    (1.4 * COALESCE(pt.purchase_price, 0) + 1.2 * COALESCE(SUM(p.cost * p.quantity), 0)) AS price
     FROM vehicles v
     LEFT JOIN vehicletypes vt ON v.vehicle_typeID = vt.vehicle_typeID
     LEFT JOIN manufacturers m ON v.manufacturerID = m.manufacturerID
@@ -193,17 +194,17 @@ def details(vin):
     cur.execute(part, (vin,))
     parts = cur.fetchall()
 
-    sell = """SELECT * FROM customers c
-    JOIN purchasetransactions p ON p.customerID = c.customerID
-    JOIN vehicles v ON v.vehicleID = p.vehicleID
+    sell_car = """SELECT * FROM customers c
+    JOIN salestransactions s ON s.customerID = c.customerID
+    JOIN vehicles v ON v.vehicleID = s.vehicleID
     WHERE v.vin = %s"""
     
-    cur.execute(sell, (vin,))
+    cur.execute(sell_car, (vin,))
     seller = cur.fetchone()
 
     buy = """SELECT * FROM customers c
-    JOIN salestransactions s ON s.customerID = c.customerID
-    JOIN vehicles v ON v.vehicleID = s.vehicleID
+    JOIN purchasetransactions p ON p.customerID = c.customerID
+    JOIN vehicles v ON v.vehicleID = p.vehicleID
     WHERE v.vin = %s"""
     
     cur.execute(buy, (vin,))
@@ -225,13 +226,113 @@ def mark(partID, vin):
 
     return render_template("vehicle_details.html", vin=vin)
 
-@app.route('/sellcar')
-def sell():
-    return render_template("sellcar.html", sell=sell)
+@app.route('/newcustomer', methods=['GET','POST'])
+def new():
+    msg = ''
 
-@app.route('/buycar')
-def buy():
-    return render_template("buycar.html", buy=buy)
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        phone_number = request.form['phone_number']
+        email_address = request.form['email_address']
+        street = request.form['street']
+        city = request.form['city']
+        state = request.form['state']
+        postal_code = request.form['postal_code']
+        id_number = request.form['id_number']
+        business_name = request.form['business_name']
+
+        cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+        sql = """INSERT INTO customers (phone_number, email_address, street, city, state, postal_code, id_number, first_name, last_name, business_name)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+
+        cur.execute(sql, (phone_number, email_address, street, city, state, postal_code, id_number, first_name, last_name, business_name))
+
+        mysql.connection.commit()
+
+        new_id = cur.lastrowid
+
+        cur.close()
+
+        return redirect(url_for('cars'))
+
+    return render_template("newcustomer.html", customerID=new_id)
+
+@app.route('/sellcar/<vin>')
+def sell(vin):
+    customerID = request.args.get('customerID', '')
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    sql = "SELECT * FROM vehicles WHERE vin = %s"
+    cur.execute(sql, (vin,))
+    vehicle = cur.fetchone()
+
+    cur.execute("SELECT * FROM customers ORDER BY last_name ASC")
+    customers = cur.fetchall()
+    cur.close()
+
+    return render_template("sellcar.html", customerID=customerID, customers=customers, vehicle=vehicle)
+
+@app.route('/sold', methods=['POST'])
+def sold():
+    if request.method == 'POST':
+        vehicleID = request.form['vehicleID']
+        customerID = request.form['customerID']
+        userID = session['userID']
+        sales_date = request.form['sales_date']
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    sql = """INSERT INTO salestransactions (vehicleID, userID, customerID, sales_date)
+    VALUES (%s, %s, %s, %s)"""
+
+    cur.execute(sql, (vehicleID, customerID, userID, sales_date))
+    cur.close()
+
+    return redirect(url_for('cars'))
+
+@app.route('/buycar/<vin>')
+def buy(vin):
+    customerID = request.args.get('customerID', '')
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)\
+    
+    sql = "SELECT * FROM vehicles WHERE vin = %s"
+    cur.execute(sql, (vin,))
+    vehicle = cur.fetchone()
+
+    sell = """SELECT * FROM customers c
+    JOIN purchasetransactions p ON p.customerID = c.customerID
+    JOIN vehicles v ON v.vehicleID = p.vehicleID
+    WHERE v.vin = %s"""
+
+    cur.execute(sell, (vin,))
+    seller = cur.fetchone()
+    cur.close()
+    return render_template("buycar.html", customerID=customerID, seller=seller, vehicle=vehicle)
+
+@app.route('/purchase_vehicle', methods=['POST'])
+def purchase():
+    vehicleID = request.form['vehicleID']
+    customerID = request.form['customerID']
+    userID = session['userID']
+    purchase_date = request.form['purchase_date']
+    purchase_price = request.form['purchase_price']
+    vehicle_condition = request.form['vehicle_condition']
+
+    cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    sql = """INSERT INTO purchasetransactions (vehicleID, userID, customerID, purchase_price, purchase_date, vehicle_condition)
+    VALUES (%s, %s, %s, %s, %s, %s)"""
+
+    cur.execute(sql, (vehicleID, userID, customerID, purchase_price, purchase_date, vehicle_condition))
+    mysql.connection.commit()
+    cur.close()
+
+    return redirect(url_for('cars'))
+
 
 @app.route('/profile')
 def profile():
@@ -257,7 +358,7 @@ def sales_productivity():
     JOIN parts p ON p.part_orderID = po.part_orderID
     GROUP BY po.vehicleID) parts_sum ON parts_sum.vehicleID = s.vehicleID
     GROUP BY u.userID
-    ORDER BY vehicles_sold DESC, total_sales DESC"""
+    ORDER BY vehicles_sold DESC, total DESC"""
 
     cur.execute(sql)
     sales = cur.fetchall()
@@ -276,7 +377,7 @@ def seller_history():
     FROM customers c
     LEFT JOIN purchasetransactions pt ON pt.customerID = c.customerID
     GROUP BY c.customerID
-    ORDER BY num_sold DESC, total_paid ASC"""
+    ORDER BY sold DESC, total ASC"""
 
     cur.execute(sql)
     sellers = cur.fetchall()
@@ -296,7 +397,7 @@ def part_statistics():
     LEFT JOIN partorders po ON po.vendorID = v.vendorID
     LEFT JOIN parts p ON p.part_orderID = po.part_orderID
     GROUP BY v.vendorID
-    ORDER BY parts_purchased DESC"""
+    ORDER BY parts DESC"""
 
     cur.execute(sql)
     parts = cur.fetchall()

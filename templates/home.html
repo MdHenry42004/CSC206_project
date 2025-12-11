@@ -12,12 +12,12 @@
 
             <!--Session.get was found here https://learn.microsoft.com/en-us/windows/win32/winrm/session-get-->
             {% if session.get('loggedin') %}
-                <a href="{{ url_for('profile') }}">My Profile</a>
+                <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
             {% else %}
                 <a href="{{ url_for('login') }}">Login</a>
             {% endif %}
 
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
         </nav>

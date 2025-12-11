@@ -9,45 +9,40 @@
         <nav>
             <a href="{{ url_for('home') }}">Home</a>
             <a href="{{ url_for('cars') }}">Vehicles</a>
-            <a href="{{ url_for('profile') }}">My Profile</a>
+            <a href="{{ url_for('profile') }}">{{ session.get('username') }}</a>
             
-            {% if session.get('role') == 'Owner' %}
+            {% if session.get('role') in ['Admin', 'Owner'] %}
                 <a href="{{ url_for('reports') }}">Reports</a>
             {% endif %}
         </nav>
 
-        <h1>Sell My Car</h1>
+        <h1>Sell Vehicle</h1>
+
+        <div class="container">
+        <h2>Details</h2>
+        <h3>{{ vehicle.vin }}, {{ vehicle.model_year }}, {{ vehicle.model_name }}</h3>
+        <form method="POST" action="{{ url_for('sold') }}">
+            <label>Select Customer</label>
+            <select name="customerID">
+                {% for c in customers %}
+                    <option value="{{ c.customerID }}">
+                        {{ c.last_name }}, {{ c.first_name }}, {{ c.id_number }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <label>Date of Sale</label>
+            <input type="date" name="sales_date" required>
+            <input type="hidden" name="vehicleID" value="{{ vehicle.vehicleID }}">
+            <button type="submit">Complete Sale</button>
+        </form>
+        </div>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('new') }}"><button>Add New Customer</button></a>
+        </p>
 
         <footer>
         </footer>
-        
-        <form action="carsold.html" method="post">
-            <table align="center">
-                <tr>
-                    <th>Please input your cars data</th>
-                </tr>
-                <tr>
-                    <td>
-                        <label for="year"><b>Year</b></label>
-                        <input type="year" placeholder="Enter Car's Year" name="year" required>
-                    </td>
-                    <td>
-                        <label for="miles"><b>Mileage</b></label>
-                        <input type="miles" placeholder="Enter Mileage" name="miles" required>
-                    </td>
-                    <td>
-                        <label for="brand"><b>Brand</b></label>
-                        <input type="brand" placeholder="Enter Car's Brand" name="brand" required>
-                    </td>
-                    <td>
-                        <label for="price"><b>Asking Price</b></label>
-                        <input type="price" placeholder="Enter Asking Price" name="price" required>
-                    </td>
-                    <td>
-                        <button type="submit">Submit</button>
-                    </td>
-                </tr>
-            </table>
-        </form>
     </body>
 </html>
